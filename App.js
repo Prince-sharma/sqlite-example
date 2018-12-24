@@ -1,6 +1,6 @@
 import Expo, { SQLite,  Constants, BarCodeScanner, Permissions  } from 'expo';
 import React, { Component } from 'react';
-import { Button, StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { Button, StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 
 
 
@@ -125,7 +125,7 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, {alignContent:"center"}]}>
         <View
           style={{
             flexDirection: 'row',
@@ -146,18 +146,12 @@ export default class App extends React.Component {
               this.setState({ text: null });
             }}
           />
-          <Button
-            onPress={this.showdb}
-            title="Learn More"
-            color="#841584"
-            accessibilityLabel="Learn more about this purple button"
-          />
         </View>
 
 
 
-        <View style={styles.container}>
-        {this.state.hasCameraPermission === null ?
+        <View style={[styles.container, , {alignContent:"center"}]}>
+          {this.state.hasCameraPermission === null ?
           <Text>Requesting for camera permission</Text> :
           this.state.hasCameraPermission === false ?
             <Text>Camera permission is not granted</Text> :
@@ -172,7 +166,7 @@ export default class App extends React.Component {
 
 
 
-        <View style={{ flex: 1, backgroundColor: 'gray' }}>
+        <ScrollView style={{ flex: 1, backgroundColor: 'gray' }}>
           <Items
             done={false}
             ref={todo => (this.todo = todo)}
@@ -197,7 +191,7 @@ export default class App extends React.Component {
                 this.update
               )}
           />
-        </View>
+        </ScrollView>
       </View>
     );
   }
