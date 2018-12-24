@@ -1,6 +1,6 @@
 import Expo, { SQLite,  Constants, BarCodeScanner, Permissions  } from 'expo';
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { Button, StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 
 
 
@@ -25,7 +25,7 @@ class Items extends React.Component {
 
     return (
       <View style={{ margin: 5 }}>
-        {items.map(({ id, done, value }) => (
+        {items.map(({ id, roll, done }) => (
           <TouchableOpacity
             key={id}
             onPress={() => this.props.onPressItem && this.props.onPressItem(id)}
@@ -35,7 +35,7 @@ class Items extends React.Component {
               borderColor: 'black',
               borderWidth: 1,
             }}>
-            <Text>{value}</Text>
+            <Text>{roll}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -59,14 +59,16 @@ export default class App extends React.Component {
     hasCameraPermission: null  // added prince
   };
 
-
-
-
   componentDidMount() {
     this._requestCameraPermission();  //added prince
+    // db.transaction(tx => {
+    //   tx.executeSql(
+    //     'drop table items;', [], ()=>{console.log("delete old table")}
+    //   );
+    // });
     db.transaction(tx => {
       tx.executeSql(
-        'create table if not exists items (id integer primary key not null, done int, value text);'
+        'create table if not exists items (id integer primary key not null, roll string unique not null, done int);'
       );
     });
   }
@@ -83,30 +85,36 @@ export default class App extends React.Component {
   // added prince
 
   // added prince  
+  sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+      if ((new Date().getTime() - start) > milliseconds){
+        break;
+      }
+    }
+  }
 
   _handleBarCodeRead = data => {
-
-    this.compare(JSON.stringify(data.data));
-
-     var isTrueSet = this.state.valid;
-
-    console.log(data.data);
-
-
-    if(!isTrueSet) 
-    {
-    
-    
-      this.add(JSON.stringify(data));
-    }
-
-
-
-    
-
+    this.add(data.data);
+    this.sleep(1000);
+    console.log("in handle");
   };
 
   //added prince
+
+  // added by ea
+  showdb() {
+    db.transaction(
+      tx => {
+        //tx.executeSql('insert into items (done, value) values (0, ?)', [text]);
+        tx.executeSql('SELECT * FROM items', [], (_, {rows}) =>
+          console.log(rows)
+        );
+      },
+      null,
+      this.update
+    );
+  }
 
   render() {
     return (
@@ -130,6 +138,12 @@ export default class App extends React.Component {
               this.add(this.state.text);
               this.setState({ text: null });
             }}
+          />
+          <Button
+            onPress={this.showdb}
+            title="Learn More"
+            color="#841584"
+            accessibilityLabel="Learn more about this purple button"
           />
         </View>
 
@@ -184,26 +198,39 @@ export default class App extends React.Component {
   add(text) {
     db.transaction(
       tx => {
-        tx.executeSql('insert into items (done, value) values (0, ?)', [text]);
-        /*tx.executeSql('select * from items', [], (_, { rows }) =>
-          console.log(JSON.stringify(rows))
-        );*/
+        tx.executeSql('insert into items (roll, done) values (?, 0)', [text], ()=>{}, this.errorHandle);
+        //(tx, error)=>{console.log(error.message)});
       },
       null,
       this.update
     );
   }
 
+  errorHandle(tx, error){
+    Alert.alert(
+      'Error',
+      'User has already issued pass',
+      [
+        //{text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
+        //{text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ],
+      //{ cancelable: false }
+    )
+  }
+
   compare(text) {
     db.transaction(
       tx => {
 
-        foo = tx.executeSql('SELECT items.value FROM items WHERE items.value = ?', [text], (ResultSet) => {console.log(ResultSet)}, 
-          () => {console.log("error")});
+        tx.executeSql('SELECT items.roll FROM items WHERE items.roll = ?', [text], 
+          (tx, ResultSet) => {console.log("rows affected"); console.log(ResultSet)}, this.errorHandle);
+          //(tx, error) => {console.log(error.message)});
 
         //console.log(foo);
         
-        this.setState({valid : Boolean([foo])}) 
+        this.setState({valid : Boolean(false)})
+        console.log("after compare"+this.state.valid) 
         /*tx.executeSql('select * from items', [], (_, { rows }) =>
           console.log(JSON.stringify(rows))
           
