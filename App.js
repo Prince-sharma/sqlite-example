@@ -66,6 +66,12 @@ export default class App extends React.Component {
     //     'drop table items;', [], ()=>{console.log("delete old table")}
     //   );
     // });
+    
+    // db.transaction(tx => {
+    //   tx.executeSql(
+    //     'drop table items;', [], ()=>{console.log("deleted")}, ()=>{console.log("error")}
+    //   );
+    // });
     db.transaction(tx => {
       tx.executeSql(
         'create table if not exists items (id integer primary key not null, roll string unique not null, done int);'
@@ -95,6 +101,7 @@ export default class App extends React.Component {
   }
 
   _handleBarCodeRead = data => {
+    console.log(data.data);
     this.add(data.data);
     this.sleep(1000);
     console.log("in handle");
@@ -131,7 +138,7 @@ export default class App extends React.Component {
               borderColor: 'gray',
               borderWidth: 1,
             }}
-            placeholder="what do you need to do?"
+            placeholder="Enter roll number manually"
             value={this.state.text}
             onChangeText={text => this.setState({ text })}
             onSubmitEditing={() => {
