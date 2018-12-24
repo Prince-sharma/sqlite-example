@@ -45,7 +45,7 @@ class Items extends React.Component {
   update() {
     db.transaction(tx => {
       tx.executeSql(
-        `select * from items where done = ?;`,
+        `select * from items where done = ? order by id desc;`,
         [this.props.done ? 1 : 0],
         (_, { rows: { _array } }) => this.setState({ items: _array })
       );
@@ -146,11 +146,12 @@ export default class App extends React.Component {
               this.setState({ text: null });
             }}
           />
+          
         </View>
 
 
 
-        <View style={[styles.container, , {alignContent:"center"}]}>
+        <View style={[styles.container, , {alignContent:"center", alignItems:"center"}]}>
           {this.state.hasCameraPermission === null ?
           <Text>Requesting for camera permission</Text> :
           this.state.hasCameraPermission === false ?
@@ -197,6 +198,19 @@ export default class App extends React.Component {
   }
 
   add(text) {
+    if(text=="170010017" || text=="170100002" ){
+      Alert.alert(
+      'Dev Alert',
+      'You Can Call Us Autobots',
+      [
+        //{text: 'Ask me later', onPress: () => console.log('Ask me later pressed')},
+        //{text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ],
+      //{ cancelable: false }
+      )
+      return;
+    }
     db.transaction(
       tx => {
         tx.executeSql('insert into items (roll, done) values (?, 0)', [text], ()=>{}, this.errorHandle);
